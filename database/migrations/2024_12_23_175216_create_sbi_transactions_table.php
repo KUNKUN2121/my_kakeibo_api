@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('sbi_transactions', function (Blueprint $table) {
             $table->id();
-            $table->string('approval_number'); // 承認ID
-            $table->date('transaction_date'); // 取引日
+            $table->unsignedBigInteger('user_id')->default(1); // 仮で1を設定
+            $table->string('approval_number')->nullable(); // 承認ID
+            $table->datetime('transaction_date'); // 取引日
             $table->string('merchant_name')->nullable(); // 加盟店名
             $table->string('currency'); //  通貨
             $table->decimal('amount', 10, 2); // 金額
-            $table->boolean('is_registered_to_budget')->default(false); // 家計簿登録フラグ
+            $table->string('memo')->nullable(); // メモ
+            $table->boolean('is_registered_to_budget')->default(true); // 家計簿登録フラグ
             $table->boolean('is_confirmed')->default(false); // 確定状態(クレカ)
             $table->timestamps();
         });

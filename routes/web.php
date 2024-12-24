@@ -2,12 +2,13 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SbiTransactionsController;
+use App\Http\Controllers\ViewController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
-
+Route::get('/home', [ViewController::class, 'home'])->name('home');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
