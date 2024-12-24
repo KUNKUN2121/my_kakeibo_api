@@ -28,10 +28,13 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ item }) => {
 
         }}>
             {/* {item.is_confirmed == true ? "📭確定📭" : "未確定"}<br /> */}
-            <p>{dateFormat(item.transaction_date)}</p>
+            <p>{dateFormat(item.transaction_date)} {
+            item.is_confirmed == true ? " [確定]" : ""}</p>
             <div css={container}>
                 <span css={merchantCss}>{getMerchantName(item.merchant_name)}</span>
-                <span css={priceCss}>{amountFormat(item.amount, item.currency)}<span css={currencyCss}>{item.currency == "JPY" ? "円" : item.currency}</span></span>
+                <span css={priceCss} style={{
+                    color: item.amount < 0 ? "red" : "black",
+                }}>{amountFormat(item.amount, item.currency)}<span css={currencyCss}>{item.currency == "JPY" ? "円" : item.currency}</span></span>
             </div>
             <span css={memoCss}>{item.memo}</span>
 
