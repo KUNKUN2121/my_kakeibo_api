@@ -17,4 +17,15 @@ class SbiTransactions extends Model
         $this->is_confirmed = $data['is_confirmed'];
         $this->save();
     }
+
+    protected $fillable = [
+        'user_id',
+        'approval_number',
+        'transaction_date',
+        'merchant_name',
+        'currency',
+        'amount',
+        'is_registered_to_budget',
+        'is_confirmed',
+    ];
 }

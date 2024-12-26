@@ -14,13 +14,13 @@ class ViewController extends Controller
     {
         // sbi_transactions からデータを取得 transaction_date でソート
         $sbi_transactions = SbiTransactions::orderBy('transaction_date', 'desc')->get();
+        $budgets = new BudgetsController();
+        $current_balance = $budgets->getRemainingBalance();
 
-        $monthlyBalance = new MonthlyBalanceController();
-        $remaining_balance = $monthlyBalance->getRemainingBalance(2024, 12);
 
         return Inertia::render('Home', [
             'sbi_transactions' => $sbi_transactions,
-            'remaining_balance' => $remaining_balance,
+            'current_balance' => $current_balance,
             'balance' => 30000,
         ]);
     }

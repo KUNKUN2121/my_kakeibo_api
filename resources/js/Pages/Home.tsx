@@ -17,17 +17,16 @@ interface SbiTransaction {
 
 interface HomeProps {
     sbi_transactions: SbiTransaction[];
-    remaining_balance: number;
-    balance: number;
+    current_balance: number;
 }
 
 
 
-const Home: React.FC<HomeProps> = ({ sbi_transactions,remaining_balance,balance }) => {
+const Home: React.FC<HomeProps> = ({ sbi_transactions,current_balance }) => {
     return (
         <div css={wapper}>
             <h1>SBI 履歴</h1>
-            <BalanceInfo remaining_balance={remaining_balance} />
+            <BalanceInfo current_balance={current_balance}/>
             <ul style={{
                 marginTop: "20px",
 

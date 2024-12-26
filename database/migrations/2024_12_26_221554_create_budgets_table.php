@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('monthly_balances', function (Blueprint $table) {
+        Schema::create('budgets', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->default(1); // 仮で1を設定
-            $table->year('year');
-            $table->tinyInteger('month');
-            $table->integer('balance')->default(30000);
-            $table->integer('carried_over_balance')->default(0);
-            $table->timestamps(); // 作成日時・更新日時
+            $table->string('name')->nullable(); // 家計簿名
+            $table->decimal('initial_balance', 10, 2)->default(0); // 初期残高
+            $table->decimal('current_balance', 10, 2)->default(0); // 現在の残高
+            $table->timestamps(); // 作成日、更新日
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('monthly_balances');
+        Schema::dropIfExists('budgets');
     }
 };
