@@ -229,4 +229,19 @@ class SbiTransactionsController extends Controller
             ]);
         }
     }
+
+
+    public function getTransactions(){
+        $userId = 1;
+        $transactions = SbiTransactions::where('user_id', $userId)->orderBy('transaction_date', 'desc')->get();
+        $budgets = new BudgetsController();
+        $budget = Budgets::where('user_id', $userId)->first();
+        $current_balance = $budget->current_balance;
+
+        return response()->json([
+            'status' => 200,
+            'current_balance' => $current_balance,
+            'transactions' => $transactions,
+        ]);
+    }
 }
