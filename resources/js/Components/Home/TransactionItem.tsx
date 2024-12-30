@@ -2,6 +2,8 @@
 import React from 'react';
 import { css } from "@emotion/react"
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
+import UndoIcon from '@mui/icons-material/Undo';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 import {
     LeadingActions,
@@ -12,6 +14,7 @@ import {
     Type,
   } from 'react-swipeable-list';
   import 'react-swipeable-list/dist/styles.css';
+import { DeleteOutline } from '@mui/icons-material';
 
 
 interface TransactionItemProps {
@@ -41,9 +44,7 @@ const leadingActions = () => (
   );
 
   const trailingActions = (id : string, is_registered_to_budget : boolean, handleToggleBudget : (id: string, isRegisteredToBudget: boolean) => void) => (
-    <div style={{
-        // width: '50px',
-        display: 'flex', flexDirection: 'row' }}>
+
         <TrailingActions>
         <SwipeAction
             onClick={() => {
@@ -51,26 +52,44 @@ const leadingActions = () => (
                 handleToggleBudget(id, is_registered_to_budget)
             }}
         >
-            <div css={itemCss}>
-                <BookmarkAddIcon
-                    style={{
-                        fontSize: "40px",
-                        color: "#333"
-                    }}
-                />
-                <p style={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    wordBreak: "break-all",
-                    whiteSpace: "nowrap",
-
-                }}>家計簿</p><p>追加</p>
+            <div css={actionContent} style={{ backgroundColor: "#ba772b"}}>
+                <GroupsIcon />
             </div>
         </SwipeAction>
-        </TrailingActions>
-    </div>
-  );
+        {/* 222222 */}
+        <SwipeAction
+            onClick={() => {
+                console.log("toggle")
+                handleToggleBudget(id, is_registered_to_budget)
+            }}
+        >
+            {is_registered_to_budget == true ? (
+                // 家計簿に登録しない
+                <div css={actionContent} style={{
+                    backgroundColor: "#f44336",
+                    }}>
+                    <div css={itemColumnCentered}>
+                        <DeleteOutline />
+                    </div>
+                </div>
+            ) : (
+                <div css={actionContent} style={{
+                    backgroundColor: "#4caf50",
+                    }}>
+                    <div css={itemColumnCentered}>
+                        <UndoIcon />
+                    </div>
+                </div>
 
+            )}
+
+        </SwipeAction>
+        </TrailingActions>
+
+  );
+  const handleItemClick = (item: SbiTransaction) => {
+    window.location.href = `/home/${item.id}`;
+};
 
 const TransactionItem: React.FC<TransactionItemProps> = ({ item, handleToggleBudget}) => {
     return (
@@ -82,8 +101,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ item, handleToggleBud
             <SwipeableListItem
                 leadingActions={leadingActions()}
                 trailingActions={trailingActions(item.id, item.is_registered_to_budget,handleToggleBudget)}
+                onClick={() => handleItemClick(item)}
             >
-                <li key={item.approval_number} css={wapper} style={{
+                <div key={item.approval_number} css={wapper} style={{
                     backgroundColor: item.is_registered_to_budget == false ? "#cdcdcd98" : "#fff",
                     color: item.is_registered_to_budget == false ? "#676767" : "#333",
 
@@ -102,7 +122,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ item, handleToggleBud
 
 
 
-                </li>
+                </div>
             </SwipeableListItem>
         </SwipeableList>
     );
@@ -120,17 +140,24 @@ const merchantCss = css`
     font-size: 20px;
 `;
 
-const itemCss = css`
+const actionContent = css`
+    height: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background-color: #b8ffb2;
-    p {
-        font-size: 12px;
-    }
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    box-sizing: border-box;
+    color: #eee;
+    user-select: none;
 `;
 
+
+const itemColumnCentered = css`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+`;
 const container = css`
     display: flex;
     justify-content: space-between;

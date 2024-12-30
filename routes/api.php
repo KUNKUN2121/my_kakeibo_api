@@ -18,3 +18,5 @@ Route::post('/sbi/selenium/add', [SbiTransactionsController::class, 'addTransact
 Route::post('/toggleRegisterToBudget', [SbiTransactionsController::class, 'toggleRegisterToBudget'])->name('api.sbi.mail.add');
 
 Route::get('/transactions', [SbiTransactionsController::class, 'getTransactions'])->name('api.sbi.mail.add');
+
+Route::get('/transactions/{id}', [SbiTransactionsController::class, 'getTransactionsDetail'])->name('api.sbi.mail.add');

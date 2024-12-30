@@ -24,4 +24,9 @@ class ViewController extends Controller
             'balance' => 30000,
         ]);
     }
+
+    public function detail($id)
+    {
+        return Inertia::render('Detail');
+    }
 }

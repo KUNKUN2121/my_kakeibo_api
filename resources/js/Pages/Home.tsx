@@ -3,9 +3,12 @@ import { css } from "@emotion/react"
 import BalanceInfo from "@/Components/Home/BlanceInfo";
 import TransactionItem from "@/Components/Home/TransactionItem";
 import { useEffect, useState } from "react";
+import CachedIcon from '@mui/icons-material/Cached';
+import AddIcon from '@mui/icons-material/Add';
 
 
 interface SbiTransaction {
+    id: string;
     approval_number: string;
     transaction_date: string;
     merchant_name: string | null;
@@ -49,6 +52,8 @@ const Home: React.FC<HomeProps> = ({}) => {
 
     // トグル処理
     const handleToggleBudget = async (id: string, isRegisteredToBudget: boolean) => {
+        // 300ms待機する
+        await new Promise((resolve) => setTimeout(resolve, 300));
         try {
             const response = await fetch("/api/toggleRegisterToBudget", {
                 method: "POST",
@@ -75,8 +80,16 @@ const Home: React.FC<HomeProps> = ({}) => {
 
     return (
         <div css={wapper}>
-            <h1>SBI 履歴</h1>
             <BalanceInfo current_balance={currentBalance}/>
+            <button css={button}>
+                更新
+                <CachedIcon />
+            </button>
+            <button css={button}>
+                手動登録
+                <AddIcon />
+            </button>
+            <h2>取引履歴</h2>
             <ul style={{
                 marginTop: "20px",
 
@@ -94,6 +107,19 @@ const Home: React.FC<HomeProps> = ({}) => {
 
 const wapper = css`
 
+`;
+
+const button = css`
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
 `;
 
 export default Home;

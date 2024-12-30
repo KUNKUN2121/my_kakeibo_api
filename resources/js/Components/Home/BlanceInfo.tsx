@@ -12,10 +12,10 @@ const BalanceInfo: React.FC<BalanceInfoProps> = ({ current_balance }) => {
         <div css={wapper}>
             <h2>残り残高</h2>
             <p css={currentBalanceCss}>{amountFormat(current_balance)}円</p>
-            一日あたり
-            100円/1000円
-            一週間あたり
-            一ヶ月あたり
+            {/* ProgressBarを表示 */}
+
+            
+
         </div>
     );
 };
