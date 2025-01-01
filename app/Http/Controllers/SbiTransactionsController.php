@@ -231,9 +231,16 @@ class SbiTransactionsController extends Controller
     }
 
 
-    public function getTransactions(){
+    public function getTransactions(
+        Request $request
+    ){
+        // getメソッドからmonthを取得 ない場合は現在の月を取得
+        $month = $request->get('month') ?? date('m');
         $userId = 1;
-        $transactions = SbiTransactions::where('user_id', $userId)->orderBy('transaction_date', 'desc')->get();
+
+
+
+        $transactions = SbiTransactions::where('user_id', $userId)->whereMonth('transaction_date', $month)->orderBy('transaction_date', 'desc')->get();
         $budgets = new BudgetsController();
         $budget = Budgets::where('user_id', $userId)->first();
         $current_balance = $budget->current_balance;

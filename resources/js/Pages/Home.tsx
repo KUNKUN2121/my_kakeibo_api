@@ -32,10 +32,15 @@ const Home: React.FC<HomeProps> = ({}) => {
     // データ取得用関数
     const fetchTransactions = async () => {
         try {
-            const response = await fetch("/api/transactions"); // APIのURLを適切に設定
+            const date = new Date();
+            const month = date.getMonth() + 1;
+            const response = await fetch(`/api/transactions?month=${month}`, {
+            });
+
+            // const response = await fetch("/api/transactions");
             if (response.ok) {
                 const data = await response.json();
-                setSbiTransactions(data.transactions); // 適切なキーに合わせて変更
+                setSbiTransactions(data.transactions);
                 setCurrentBalance(data.current_balance);
             } else {
                 console.error("Failed to fetch transactions");
@@ -81,15 +86,19 @@ const Home: React.FC<HomeProps> = ({}) => {
     return (
         <div css={wapper}>
             <BalanceInfo current_balance={currentBalance}/>
-            <button css={button}>
+            {/* <button css={button}>
                 更新
                 <CachedIcon />
             </button>
             <button css={button}>
                 手動登録
                 <AddIcon />
-            </button>
-            <h2>取引履歴</h2>
+            </button> */}
+            <h2
+                style={{
+                    marginTop: "24px",
+                }}
+            >取引履歴</h2>
             <ul style={{
                 marginTop: "20px",
 
