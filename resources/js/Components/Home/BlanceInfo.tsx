@@ -7,7 +7,11 @@ interface BalanceInfoProps {
 }
 
 
+
 const BalanceInfo: React.FC<BalanceInfoProps> = ({ current_balance }) => {
+
+    // apiから取得する
+
     return (
         <div css={wapper}>
             <h2>残り残高</h2>

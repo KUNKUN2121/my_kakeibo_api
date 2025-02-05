@@ -20,6 +20,7 @@ import { DeleteOutline } from '@mui/icons-material';
 interface TransactionItemProps {
     item: SbiTransaction;
     handleToggleBudget: (id: string, isRegisteredToBudget: boolean) => void;
+    handleWarikanOpen: (id: string) => void;
 }
 
 
@@ -43,13 +44,16 @@ const leadingActions = () => (
     </LeadingActions>
   );
 
-  const trailingActions = (id : string, is_registered_to_budget : boolean, handleToggleBudget : (id: string, isRegisteredToBudget: boolean) => void) => (
+  const trailingActions = (
+    id : string,
+    is_registered_to_budget : boolean,
+     handleToggleBudget : (id: string, isRegisteredToBudget: boolean)=> void, handleWarikanOpen : (id: string) =>void) => (
 
         <TrailingActions>
         <SwipeAction
             onClick={() => {
                 console.log("toggle")
-                handleToggleBudget(id, is_registered_to_budget)
+                handleWarikanOpen(id)
             }}
         >
             <div css={actionContent} style={{ backgroundColor: "#ba772b"}}>
@@ -91,7 +95,7 @@ const leadingActions = () => (
     window.location.href = `/home/${item.id}`;
 };
 
-const TransactionItem: React.FC<TransactionItemProps> = ({ item, handleToggleBudget}) => {
+const TransactionItem: React.FC<TransactionItemProps> = ({ item, handleToggleBudget, handleWarikanOpen}) => {
     return (
         <SwipeableList
             fullSwipe={true}
@@ -100,7 +104,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ item, handleToggleBud
         >
             <SwipeableListItem
                 leadingActions={leadingActions()}
-                trailingActions={trailingActions(item.id, item.is_registered_to_budget,handleToggleBudget)}
+                trailingActions={trailingActions(item.id, item.is_registered_to_budget,handleToggleBudget,handleWarikanOpen)}
                 onClick={() => handleItemClick(item)}
             >
                 <div key={item.approval_number} css={wapper} style={{
@@ -198,28 +202,6 @@ const dateFormat = (date: string): string => {
 const amountFormat = (amount: number, currency:string): string => {
 
     return Math.floor(amount).toLocaleString();
-}
-
-
-const toggleBudget = (id: string, is_registered_to_budget : boolean) => {
-    console.log(id);
-    // josonで/api/toggleRegisterToBudget にpost
-    fetch('/api/toggleRegisterToBudget', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            id: id,
-            is_registered_to_budget: !is_registered_to_budget,
-        }),
-    })
-    .then(response => {
-        if (response.status === 200) {
-            // 成功したらリロード
-            location.reload();
-        }
-    })
 }
 
 export default TransactionItem;

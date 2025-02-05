@@ -19,4 +19,11 @@ Route::post('/toggleRegisterToBudget', [SbiTransactionsController::class, 'toggl
 
 Route::get('/transactions', [SbiTransactionsController::class, 'getTransactions'])->name('api.sbi.mail.add');
 
+
+Route::get('/transactions/today', [SbiTransactionsController::class, 'getTodayTransactions'])->name('api.transactions.today');
+Route::get('/transactions/week', [SbiTransactionsController::class, 'getThisWeekTransactions'])->name('api.transactions.week');
+Route::get('/transactions/month', [SbiTransactionsController::class, 'getThisMonthTransactions'])->name('api.transactions.week');
+
 Route::get('/transactions/{id}', [SbiTransactionsController::class, 'getTransactionsDetail'])->name('api.sbi.mail.add');
+
+

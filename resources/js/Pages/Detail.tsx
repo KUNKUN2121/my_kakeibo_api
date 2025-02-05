@@ -1,3 +1,5 @@
+/** @jsxImportSource @emotion/react */
+import { css } from "@emotion/react"
 import React, { useEffect, useState } from "react";
 
 interface getData {
@@ -42,23 +44,63 @@ export default function Detail() {
     if (!data) return <div>Loading...</div>;
 
     return (
-        <div>
-            <>
-                <p>ID: {data.id}</p>
-                <p>User ID: {data.user_id}</p>
-                <p>Budget ID: {data.budget_id}</p>
-                <p>Is manual: {data.is_manual ? "Yes" : "No"}</p>
-                <p>Approval number: {data.approval_number}</p>
-                <p>Transaction date: {data.transaction_date}</p>
-                <p>Merchant name: {data.merchant_name}</p>
-                <p>Currency: {data.currency}</p>
-                <p>Amount: {data.amount}</p>
-                <p>Memo: {data.memo}</p>
-                <p>Is registered: {data.is_registered_to_budget ? "Yes" : "No"}</p>
-                <p>Is confirmed: {data.is_confirmed ? "Yes" : "No"}</p>
-                <p>Created at: {data.created_at}</p>
-                <p>Updated at: {data.updated_at}</p>
-            </>
+        <div css={wapper}>
+            <span>{data.is_confirmed ? "確定" : "未確定"}</span>
+            <span css={timeCss}>{dateFormat(data.transaction_date)}</span>
+
+            <span css={storeCss}>{data.merchant_name != null ? data.merchant_name : "未登録"}</span>
+            <span css={amountCss}>{amountFormat(data.amount)} 円</span>
+            <span>{data.memo}</span>
+            <span>{data.is_registered_to_budget ? "家計簿に登録済み" : "家計簿に未登録"}</span>
         </div>
     );
 }
+
+const wapper = css`
+    margin: 16px auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+`;
+
+const timeCss = css`
+
+`;
+
+const storeCss = css`
+    margin-top: 24px;
+    font-size: 24px;
+`;
+const amountCss = css`
+    margin-top: 8px;
+    font-size: 40px;
+`;
+
+const dateFormat = (date: string): string => {
+    const year = date.slice(0, 4);
+    const month = date.slice(5, 7);
+    const day = date.slice(8, 10);
+    return `${year}年${month}月${day}日 - ` + timeFormat(date);
+}
+
+// 時間の変換
+const timeFormat = (date: string): string => {
+    const hour = date.slice(11, 13);
+    const minute = date.slice(14, 16);
+    return `${hour}時${minute}分`;
+}
+
+const amountFormat = (amount: number): string => {
+    const amountStr = amount.toString().split(".")[0];
+    const amountLength = amountStr.length;
+    let result = "";
+    for (let i = 0; i < amountLength; i++) {
+        result += amountStr[i];
+        if ((amountLength - i - 1) % 3 === 0 && i !== amountLength - 1) {
+            result += ",";
+        }
+    }
+    return result;
+}
+

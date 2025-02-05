@@ -17,7 +17,6 @@ class ViewController extends Controller
         $budgets = new BudgetsController();
         $current_balance = $budgets->getRemainingBalance();
 
-
         return Inertia::render('Home', [
             'sbi_transactions' => $sbi_transactions,
             'current_balance' => $current_balance,
@@ -28,5 +27,10 @@ class ViewController extends Controller
     public function detail($id)
     {
         return Inertia::render('Detail');
+    }
+
+    public function add()
+    {
+        return Inertia::render('Add');
     }
 }

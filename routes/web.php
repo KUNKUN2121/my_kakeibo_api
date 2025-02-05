@@ -12,9 +12,10 @@ Route::get('/home', [ViewController::class, 'home'])->name('home');
 
 // /home/* 以下のルーティング
 Route::prefix('home')->group(function () {
-    Route::get('/{id}', [ViewController::class, 'detail'])->name('home');
+    Route::get('/add', [ViewController::class, 'add'])->name('home');
     Route::get('/{id}/edit', [ViewController::class, 'home'])->name('home.edit');
     Route::get('/{id}/delete', [ViewController::class, 'home'])->name('home.delete');
+    Route::get('/{id}', [ViewController::class, 'detail'])->name('home');
 });
 
 Route::get('/', function () {

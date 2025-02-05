@@ -5,6 +5,8 @@ import TransactionItem from "@/Components/Home/TransactionItem";
 import { useEffect, useState } from "react";
 import CachedIcon from '@mui/icons-material/Cached';
 import AddIcon from '@mui/icons-material/Add';
+import { Dialog } from "@mui/material";
+import DialogChildren from "@/Components/Home/DialogChildren";
 
 
 interface SbiTransaction {
@@ -30,10 +32,13 @@ const Home: React.FC<HomeProps> = ({}) => {
     const [sbiTransactions, setSbiTransactions] = useState<SbiTransaction[]>([]);
     const [currentBalance, setCurrentBalance] = useState<number>(0);
     // データ取得用関数
+
+    const [warikanId, setWarikanId] = useState<string>("");
     const fetchTransactions = async () => {
         try {
-            const date = new Date();
-            const month = date.getMonth() + 1;
+            var month = new Date().getFullYear() * 100 + (new Date().getMonth() + 1); // 現在の月をYYYYMM形式で取得
+            month  = 202412;
+
             const response = await fetch(`/api/transactions?month=${month}`, {
             });
 
@@ -56,7 +61,10 @@ const Home: React.FC<HomeProps> = ({}) => {
     }, []);
 
     // トグル処理
-    const handleToggleBudget = async (id: string, isRegisteredToBudget: boolean) => {
+    const handleToggleBudget = async (
+        id: string,
+        isRegisteredToBudget: boolean
+        ) => {
         // 300ms待機する
         await new Promise((resolve) => setTimeout(resolve, 300));
         try {
@@ -82,40 +90,97 @@ const Home: React.FC<HomeProps> = ({}) => {
 
 
 
+    const [open, setOpen] = useState(false);
+
+    const handleWarikanOpen = (id : string) => {
+        setWarikanId(id);
+        setOpen(true);
+    };
+
+    const handleWarikanClose = () => {
+      setOpen(false);
+    };
+
+
+    // 家計簿に登録する
+    const handleRegisterToBudget = async (id: string) => {
+        try {
+            const response = await fetch("/api/registerToBudget", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
+            });
+
+            if (response.ok) {
+                // 成功時にデータを再取得
+                fetchTransactions();
+            } else {
+                console.error("Failed to register to budget");
+            }
+        } catch (error) {
+            console.error("Error registering to budget:", error);
+        }
+    }
 
     return (
         <div css={wapper}>
+            <Dialog
+                fullScreen
+                open={open}
+                onClose={handleWarikanClose}
+                // TransitionComponent={Transition}
+            >
+                <DialogChildren
+                    handleClose={handleWarikanClose}
+                    id={warikanId}
+                    handleToggleBudget={handleToggleBudget}
+                />
+            </Dialog>
             <BalanceInfo current_balance={currentBalance}/>
-            {/* <button css={button}>
-                更新
-                <CachedIcon />
-            </button>
-            <button css={button}>
-                手動登録
-                <AddIcon />
-            </button> */}
+            {/* 手動登録ボタン */}
+            <AddIcon
+                css={addBtn}
+                onClick={() => {
+                    window.location.href = "/home/add";
+                }}
+            />
             <h2
                 style={{
                     marginTop: "24px",
                 }}
             >取引履歴</h2>
-            <ul style={{
-                marginTop: "20px",
+            <div css={transactionCss}>
 
-            }}>
                 {sbiTransactions.map((item) => (
                     <>
-                        <TransactionItem item={item} handleToggleBudget={handleToggleBudget} />
+                        <TransactionItem item={item} handleToggleBudget={handleToggleBudget} handleWarikanOpen={handleWarikanOpen}/>
 
                     </>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 }
 
 const wapper = css`
+    /* position: absolute; */
+`;
 
+const addBtn = css`
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+
+`;
+
+const transactionCss = css`
+    margin-top: 20px;
+    position: relative;
 `;
 
 const button = css`

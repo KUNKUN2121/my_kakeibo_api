@@ -75,6 +75,11 @@ class SbiTransactionsController extends Controller
                 if (!$get_is_confirmed) {
                     continue;
                 }
+                // authNoが""の場合は処理を終了し、次のデータへ
+                // 年会費の請求など、稀にある
+                if ($d["authNo"] == "") {
+                    continue;
+                }
 
                 $sbi_instance = new SbiTransactions();
 
@@ -234,13 +239,18 @@ class SbiTransactionsController extends Controller
     public function getTransactions(
         Request $request
     ){
-        // getメソッドからmonthを取得 ない場合は現在の月を取得
-        $month = $request->get('month') ?? date('m');
         $userId = 1;
 
+        // getメソッドからmonthを取得 ない場合は現在の月を取得
+        $month = $request->get('month') ? $request->get('month') : date('Ym');
+        $formattedMonth = substr($month, 0, 4) . '-' . substr($month, 4, 2);
 
 
-        $transactions = SbiTransactions::where('user_id', $userId)->whereMonth('transaction_date', $month)->orderBy('transaction_date', 'desc')->get();
+        $transactions = SbiTransactions::where('user_id', $userId)
+                                        ->where('transaction_date', 'like', $formattedMonth . '%')
+                                        ->orderBy('transaction_date', 'desc')
+                                        ->get();
+
         $budgets = new BudgetsController();
         $budget = Budgets::where('user_id', $userId)->first();
         $current_balance = $budget->current_balance;
@@ -263,6 +273,85 @@ class SbiTransactionsController extends Controller
             'status' => 200,
             'current_balance' => $current_balance,
             'transaction' => $transaction,
+        ]);
+    }
+
+
+    // 今日の取引を取得
+    public function getTodayTransactions(){
+        $userId = 1;
+        $today = date('Y-m-d');
+        $transactions = SbiTransactions::where('user_id', $userId)
+                                        ->where('transaction_date', $today)
+                                        ->orderBy('transaction_date', 'desc')
+                                        ->get();
+
+        $budgets = new BudgetsController();
+        $budget = Budgets::where('user_id', $userId)->first();
+        $current_balance = $budget->current_balance;
+
+        $today_total_amount = 0;
+        foreach($transactions as $transaction){
+            $today_total_amount += $transaction->amount;
+        }
+
+        return response()->json([
+            'status' => 200,
+            'current_balance' => $current_balance,
+            'this_total_amount' => $today_total_amount,
+            'transactions' => $transactions,
+        ]);
+    }
+
+    // 今月の取引を取得
+    public function getThisMonthTransactions(){
+        $userId = 1;
+        $month = date('Ym');
+        $formattedMonth = substr($month, 0, 4) . '-' . substr($month, 4, 2);
+
+        $transactions = SbiTransactions::where('user_id', $userId)
+                                        ->where('transaction_date', 'like', $formattedMonth . '%')
+                                        ->orderBy('transaction_date', 'desc')
+                                        ->get();
+
+        $budgets = new BudgetsController();
+        $budget = Budgets::where('user_id', $userId)->first();
+        $current_balance = $budget->current_balance;
+
+        $this_month_total_amount = 0;
+        foreach($transactions as $transaction){
+            $this_month_total_amount += $transaction->amount;
+        }
+
+        return response()->json([
+            'status' => 200,
+            'current_balance' => $current_balance,
+            'this_month_total_amount' => $this_month_total_amount,
+            'transactions' => $transactions,
+        ]);
+    }
+
+    // 今週の取引を取得
+    public function getThisWeekTransactions(){
+        $userId = 1;
+        $today = date('Y-m-d');
+        // 過去7日間を取得
+        $week = date('Y-m-d', strtotime('-7 day', strtotime($today)));
+
+        $transactions = SbiTransactions::where('user_id', $userId)
+                                        ->where('transaction_date', '>=', $week)
+                                        ->orderBy('transaction_date', 'desc')
+                                        ->get();
+
+        $this_week_total_amount = 0;
+        foreach($transactions as $transaction){
+            $this_week_total_amount += $transaction->amount;
+        }
+
+        return response()->json([
+            'status' => 200,
+            'this_week_total_amount' => $this_week_total_amount,
+            'transactions' => $transactions,
         ]);
     }
 }

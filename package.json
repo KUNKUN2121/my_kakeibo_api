@@ -29,8 +29,10 @@
         "@emotion/styled": "^11.14.0",
         "@mui/icons-material": "^6.3.0",
         "@mui/material": "^6.3.0",
+        "chart.js": "^4.4.7",
         "emotion-reset": "^3.0.1",
         "normalize.css": "^8.0.1",
+        "react-chartjs-2": "^5.2.0",
         "react-router-dom": "^7.1.1",
         "react-swipeable-list": "^1.10.0"
     }
