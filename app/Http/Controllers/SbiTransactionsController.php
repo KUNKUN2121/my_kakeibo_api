@@ -9,19 +9,16 @@ use Illuminate\Support\Facades\DB;
 
 class SbiTransactionsController extends Controller
 {
-    // メール用のコード
-    public function addTransaction(Request $request)
+    // メール受信登録
+    public function addMailTransaction(Request $request)
     {
-
-        // jsonで受け取る
         $data = $request->json()->all();
         $userId = 1;
 
         DB::transaction(function () use ($data, $userId) {
             $transaction = new SbiTransactions();
-            //approval_numberが重複している場合は、終了
-            $check = $transaction->where('approval_number', $data['approval_number'])->first();
-            if($check){
+            // 承認番号[approval_number] が重複している場合は、終了
+            if($transaction->where('approval_number', $data['approval_number'])->first()){
                 return response()->json([
                     'status' => 304,
                     'message' => 'Transaction already exists'
@@ -37,32 +34,16 @@ class SbiTransactionsController extends Controller
                 'amount' => $data['amount'],
             ]);
 
-            // buggetsテーブルのcurrent_balanceを更新
-            $budget = Budgets::where('user_id', $userId)->first();
-            if(!$budget){
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Budget not found'
-                ]);
-            }
-            $budget->current_balance -= $data['amount'];
-            $budget->save();
-
         });
         return response()->json([
             'status' => 200,
             'message' => 'Transaction added successfully'
         ]);
-
-        // コントローラーでDBにデータを追加する
-
-
     }
 
-    // Selenium用のコード
+    // スクレイピング用追加
     public function addTransactionSelenium(Request $request)
     {
-        // jsonで受け取る
         $data = $request->json()->all();
         $userId = 1;
 
@@ -71,18 +52,12 @@ class SbiTransactionsController extends Controller
             foreach ($data as $d) {
                 $get_is_confirmed = $d["settleStatus"] == 1 ? true : false;
 
-                // 未確定なら処理を終了し、次のデータへ
-                if (!$get_is_confirmed) {
-                    continue;
-                }
-                // authNoが""の場合は処理を終了し、次のデータへ
-                // 年会費の請求など、稀にある
-                if ($d["authNo"] == "") {
-                    continue;
-                }
+                // 未確定なら登録をしない
+                if (!$get_is_confirmed) continue;
+                // authNoがない場合は登録をしない。年会費の請求など、稀にある
+                if ($d["authNo"] == "" || $d["authNo"] == null) continue;
 
                 $sbi_instance = new SbiTransactions();
-
                 $get_approval_number = $d["authNo"];
 
                 // 承認IDから取引を取得 (firstで最新にし、被りがあっても良い)
@@ -94,14 +69,6 @@ class SbiTransactionsController extends Controller
                     $transaction->is_confirmed = true;
                     $transaction->save();
 
-                    // もともとの金額と、更新後の金額差がある場合
-                    if ($transaction->amount != $d["tranAmt"]) {
-                        // budgetsテーブルのcurrent_balanceを更新
-                        $budget = Budgets::where('user_id', $userId)->first();
-                        $budget->current_balance += $transaction->amount;  // もともとの金額を戻す
-                        $budget->current_balance -= $d["tranAmt"];  // 更新後の金額を引く
-                        $budget->save();
-                    }
                 } else {
                     // 取引がない場合は追加
                     $transaction = new SbiTransactions();
@@ -113,10 +80,6 @@ class SbiTransactionsController extends Controller
                     $transaction->amount = $d["tranAmt"];
                     $transaction->is_confirmed = true;
                     $transaction->save();
-                    // budgetsテーブルのcurrent_balanceを更新
-                        $budget = Budgets::where('user_id', $userId)->first();
-                        $budget->current_balance -= $d["tranAmt"];
-                        $budget->save();
                 }
             }
         });
@@ -126,115 +89,6 @@ class SbiTransactionsController extends Controller
             'message' => 'Transactions processed successfully'
         ]);
     }
-
-
-    // 手動で取引追加
-    public function addManualTransaction(Request $request)
-    {
-        // jsonで受け取る
-        $data = $request->json()->all();
-        $userId = 1;
-
-        DB::transaction(function () use ($data, $userId) {
-            $transaction = new SbiTransactions();
-
-
-            SbiTransactions::create([
-                'user_id' => $userId,
-                'approval_number' => null,
-                'transaction_date' => $data['transaction_date'],
-                'merchant_name' => $data['merchant_name'],
-                'currency' => $data['currency'],
-                'amount' => $data['amount'],
-                'is_manual' => true,
-            ]);
-
-            // buggetsテーブルのcurrent_balanceを更新
-            $budget = Budgets::where('user_id', $userId)->first();
-            if(!$budget){
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Budget not found'
-                ]);
-            }
-            $budget->current_balance -= $data['amount'];
-            $budget->save();
-
-        });
-        return response()->json([
-            'status' => 200,
-            'message' => 'Transaction added successfully'
-        ]);
-    }
-
-
-    // 家計簿に登録するかしないかの切り替え
-    public function toggleRegisterToBudget(Request $request)
-    {
-        // jsonで受け取る
-        $data = $request->json()->all();
-        // サンプルデータ
-
-        $userId = 1;
-
-
-
-        try {
-            DB::transaction(function () use ($data, $userId) {
-                $transaction = SbiTransactions::where('user_id' , $userId)
-                                                ->where('id', $data['id'])
-                                                ->first();
-                if(!$transaction){
-                    throw new \Exception('Transaction not found');
-                }
-
-                // 変更がない場合はthrow
-                if($transaction->is_registered_to_budget == $data['is_registered_to_budget']){
-                    throw new \Exception('No change');
-                }
-
-
-                $transaction->is_registered_to_budget = $data['is_registered_to_budget'];
-                $transaction->save();
-
-                // buggetsテーブルのcurrent_balanceを更新
-                $budget = Budgets::where('user_id', $userId)->first();
-                if(!$budget){
-                    return response()->json([
-                        'status' => 404,
-                        'message' => 'Budget not found'
-                    ]);
-                }
-
-
-                if($data['is_registered_to_budget']){
-                    $budget->current_balance -= $transaction->amount;
-                }else{
-                    $budget->current_balance += $transaction->amount;
-                }
-                $budget->save();
-
-            });
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 400,
-                'message' => $e->getMessage()
-            ]);
-        }
-        // 登録の場合
-        if($data['is_registered_to_budget']){
-            return response()->json([
-                'status' => 200,
-                'message' => 'Transaction registered to budget'
-            ]);
-        }else{
-            return response()->json([
-                'status' => 200,
-                'message' => 'Transaction unregistered to budget'
-            ]);
-        }
-    }
-
 
     public function getTransactions(
         Request $request
@@ -251,27 +105,36 @@ class SbiTransactionsController extends Controller
                                         ->orderBy('transaction_date', 'desc')
                                         ->get();
 
-        $budgets = new BudgetsController();
-        $budget = Budgets::where('user_id', $userId)->first();
-        $current_balance = $budget->current_balance;
+        // 今月、今週、今日の取引の合計金額を取得
+
+        if($month == date('Ym')){
+            $month_total_amount = $this->getMonthTransactions();
+            $week_total_amount = $this->getThisWeekTransactions();
+            $today_total_amount = $this->getTodayTransactions();
+        }else{
+            $month_total_amount = $this->getMonthTransactions($month);
+            $week_total_amount = null;
+            $today_total_amount = null;
+        }
+
 
         return response()->json([
             'status' => 200,
-            'current_balance' => $current_balance,
             'transactions' => $transactions,
+            'total_amount' => [
+                'month' => $month_total_amount,
+                'week' => $week_total_amount,
+                'today' => $today_total_amount,
+            ]
         ]);
     }
 
     public function getTransactionsDetail($id){
         $userId = 1;
         $transaction = SbiTransactions::where('user_id', $userId)->where('id', $id)->first();
-        $budgets = new BudgetsController();
-        $budget = Budgets::where('user_id', $userId)->first();
-        $current_balance = $budget->current_balance;
 
         return response()->json([
             'status' => 200,
-            'current_balance' => $current_balance,
             'transaction' => $transaction,
         ]);
     }
@@ -294,45 +157,42 @@ class SbiTransactionsController extends Controller
         foreach($transactions as $transaction){
             $today_total_amount += $transaction->amount;
         }
-
-        return response()->json([
-            'status' => 200,
-            'current_balance' => $current_balance,
-            'this_total_amount' => $today_total_amount,
-            'transactions' => $transactions,
-        ]);
+        return $today_total_amount;
     }
 
     // 今月の取引を取得
-    public function getThisMonthTransactions(){
+    public function getMonthTransactions(
+        $month = null
+    ){
+        if(!$month){
+            $month = date('Ym');
+        }
         $userId = 1;
-        $month = date('Ym');
+
         $formattedMonth = substr($month, 0, 4) . '-' . substr($month, 4, 2);
+
+
+
 
         $transactions = SbiTransactions::where('user_id', $userId)
                                         ->where('transaction_date', 'like', $formattedMonth . '%')
                                         ->orderBy('transaction_date', 'desc')
                                         ->get();
 
-        $budgets = new BudgetsController();
-        $budget = Budgets::where('user_id', $userId)->first();
-        $current_balance = $budget->current_balance;
+
 
         $this_month_total_amount = 0;
         foreach($transactions as $transaction){
             $this_month_total_amount += $transaction->amount;
         }
 
-        return response()->json([
-            'status' => 200,
-            'current_balance' => $current_balance,
-            'this_month_total_amount' => $this_month_total_amount,
-            'transactions' => $transactions,
-        ]);
+        return $this_month_total_amount;
     }
 
     // 今週の取引を取得
-    public function getThisWeekTransactions(){
+    public function getThisWeekTransactions(
+
+    ){
         $userId = 1;
         $today = date('Y-m-d');
         // 過去7日間を取得
@@ -348,10 +208,6 @@ class SbiTransactionsController extends Controller
             $this_week_total_amount += $transaction->amount;
         }
 
-        return response()->json([
-            'status' => 200,
-            'this_week_total_amount' => $this_week_total_amount,
-            'transactions' => $transactions,
-        ]);
+        return $this_week_total_amount;
     }
 }
