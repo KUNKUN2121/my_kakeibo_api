@@ -210,4 +210,51 @@ class SbiTransactionsController extends Controller
 
         return $this_week_total_amount;
     }
+
+
+    // 家計簿に登録するかしないかの切り替え
+    public function toggleRegisterToBudget(Request $request)
+    {
+        // jsonで受け取る
+        $data = $request->json()->all();
+        // サンプルデータ
+        $userId = 1;
+        try {
+            DB::transaction(function () use ($data, $userId) {
+                $transaction = SbiTransactions::where('user_id' , $userId)
+                                                ->where('id', $data['id'])
+                                                ->first();
+                if(!$transaction){
+                    throw new \Exception('Transaction not found');
+                }
+
+                // 変更がない場合はthrow
+                if($transaction->is_registered_to_budget == $data['is_registered_to_budget']){
+                    throw new \Exception('No change');
+                }
+
+
+                $transaction->is_registered_to_budget = $data['is_registered_to_budget'];
+                $transaction->save();
+
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 400,
+                'message' => $e->getMessage()
+            ]);
+        }
+        // 登録の場合
+        if($data['is_registered_to_budget']){
+            return response()->json([
+                'status' => 200,
+                'message' => 'Transaction registered to budget'
+            ]);
+        }else{
+            return response()->json([
+                'status' => 200,
+                'message' => 'Transaction unregistered to budget'
+            ]);
+        }
+    }
 }
