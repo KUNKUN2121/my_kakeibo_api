@@ -149,10 +149,6 @@ class SbiTransactionsController extends Controller
                                         ->orderBy('transaction_date', 'desc')
                                         ->get();
 
-        $budgets = new BudgetsController();
-        $budget = Budgets::where('user_id', $userId)->first();
-        $current_balance = $budget->current_balance;
-
         $today_total_amount = 0;
         foreach($transactions as $transaction){
             $today_total_amount += $transaction->amount;
