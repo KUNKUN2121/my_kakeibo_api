@@ -152,7 +152,9 @@ class SbiTransactionsController extends Controller
 
         $today_total_amount = 0;
         foreach($transactions as $transaction){
-            $today_total_amount += $transaction->amount;
+            if($transaction->is_registered_to_budget) {
+                $today_total_amount += $transaction->amount;
+            }
         }
         return $today_total_amount;
     }
@@ -180,7 +182,10 @@ class SbiTransactionsController extends Controller
 
         $this_month_total_amount = 0;
         foreach($transactions as $transaction){
-            $this_month_total_amount += $transaction->amount;
+            // is_registered_to_budgetがtrueのものだけを取得
+            if($transaction->is_registered_to_budget) {
+                $this_month_total_amount += $transaction->amount;
+            }
         }
 
         return $this_month_total_amount;
@@ -202,7 +207,9 @@ class SbiTransactionsController extends Controller
 
         $this_week_total_amount = 0;
         foreach($transactions as $transaction){
-            $this_week_total_amount += $transaction->amount;
+            if($transaction->is_registered_to_budget) {
+                $this_week_total_amount += $transaction->amount;
+            }
         }
 
         return $this_week_total_amount;
