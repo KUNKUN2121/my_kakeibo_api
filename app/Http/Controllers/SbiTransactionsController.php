@@ -93,6 +93,7 @@ class SbiTransactionsController extends Controller
     public function getTransactions(
         Request $request
     ){
+
         $userId = 1;
 
         // getメソッドからmonthを取得 ない場合は現在の月を取得
@@ -252,5 +253,25 @@ class SbiTransactionsController extends Controller
                 'message' => 'Transaction unregistered to budget'
             ]);
         }
+    }
+
+    public function getTransactionsRange(
+        Request $request
+    ){
+        $userId = 1;
+        $start = $request->get('start');
+        // 2021-01-01
+        $end = $request->get('end');
+
+        $transactions = SbiTransactions::where('user_id', $userId)
+                                        ->where('transaction_date', '>=', $start)
+                                        ->where('transaction_date', '<=', $end)
+                                        ->orderBy('transaction_date', 'desc')
+                                        ->get();
+
+        return response()->json([
+            'status' => 200,
+            'transactions' => $transactions,
+        ]);
     }
 }

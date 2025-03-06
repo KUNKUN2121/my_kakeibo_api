@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->default(1); // 仮で1を設定
             $table->unsignedBigInteger('budget_id')->nullable(); // 家計簿ID
             $table->boolean('is_manual')->default(false); // 手入力フラグ
+            // $table->string('payment_method_id')->nullable(); // 支払い方法ID
             $table->string('approval_number')->nullable(); // 承認ID
             $table->datetime('transaction_date'); // 取引日
             $table->string('merchant_name')->nullable(); // 加盟店名

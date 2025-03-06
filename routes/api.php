@@ -20,6 +20,9 @@ Route::post('/toggleRegisterToBudget', [SbiTransactionsController::class, 'toggl
 
 Route::get('/transactions', [SbiTransactionsController::class, 'getTransactions'])->name('api.sbi.mail.add');
 
+// 指定された範囲のトランザクションを取得
+Route::get('/transactions/range', [SbiTransactionsController::class, 'getTransactionsRange'])->name('api.sbi.mail.add');
+
 
 
 Route::get('/transactions/{id}', [SbiTransactionsController::class, 'getTransactionsDetail'])->name('api.sbi.mail.add');
