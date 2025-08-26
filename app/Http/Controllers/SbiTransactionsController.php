@@ -281,4 +281,32 @@ class SbiTransactionsController extends Controller
             'transactions' => $transactions,
         ]);
     }
+
+
+    // アップデート
+    public function updateTransaction(Request $request, $id){
+        $data = $request->json()->all();
+        try {
+            DB::transaction(function () use ($data, $id) {
+                $transaction = SbiTransactions::find($id);
+                if(!$transaction){
+                    throw new \Exception('Transaction not found');
+                }
+
+                // 更新処理
+                $transaction->fill($data);
+                $transaction->save();
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 400,
+                'message' => $e->getMessage()
+            ]);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Transaction updated successfully'
+        ]);
+    }
 }
